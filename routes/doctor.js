@@ -1,38 +1,41 @@
-
+// Require
 var express = require('express');
-var bcrypt = require('bcrypt');
-var jwt = require('jsonwebtoken');
-
 var mdAuthentication = require('../middlewares/authentication');
+var Doctor = require('../models/doctor');
+
 var app = express();
-var User = require('../models/user');
-
 
 // =============================================
-// Get all Users
+// Get all Doctos
 // =============================================
-app.get('/', ( request, response, next ) => {
+
+app.get('/', (request, response) => {
 
     // Create Paguination
     var from = request.query.from || 0;
     from = Number(from);
 
+    var from = request.query.from || 0;
+    from = Number(from);
+
     // Display only selected data
-    User.find({ }, 'name email image role')
+    Doctor.find({})
         .skip(from)
         .limit(5)
+        .populate('user', 'name email')
+        .populate('hospital')
         .exec( 
-            (err, users) => {
+            (err, doctor) => {
                 // Throw error
                 if ( err ) {
                     return response.status(500).json({
                         ok: false,
-                        message: 'Error loading users database!!',
+                        message: 'Error loading doctors database!!',
                         errors: err
                     });
                 }
 
-                User.count({}, (err, count) => {
+                Doctor.count({}, (err, count) => {
                     // Throw error
                     if ( err ) {
                         return response.status(500).json({
@@ -41,61 +44,59 @@ app.get('/', ( request, response, next ) => {
                             errors: err
                         });
                     }
-
                     // Consult Successful
                     response.status(200).json({
                         ok: true,
-                        users: users,
+                        doctor: doctor,
                         total: count
                     });
-
                 });
         });
 });
 
+
 // =============================================
-// Update User
+// Update Doctor
 // =============================================
 app.put('/:id', mdAuthentication.verifyToken, (request, response) =>{
+
     var id = request.params.id;
     var body = request.body;
         
     
-    User.findById( id, (err, user) => {
+    Doctor.findById( id, (err, doctor) => {
         
         if ( err ) {
             return response.status(500).json({
                 ok: false,
-                message: 'Error searching user!!',
+                message: 'Error searching doctor!!',
                 errors: err
             });
         }
         
-        if ( !user ) {
+        if ( !doctor ) {
             return response.status(400).json({
                 ok: false,
-                message: 'User does not exist!!',
-                errors: { message: "Do not exist an user with that ID"}
+                message: 'Doctor does not exist!!',
+                errors: { message: "Do not exist a doctor with that ID"}
             });
         }
 
-        user.name = body.name;
-        user.email = body.email;
-        user.role = body.role;
+        doctor.name = body.name;
+        doctor.user = request.user._id;
+        doctor.hospital = body.hospital;
 
-        user.save( (err, userSaved) =>{
+        doctor.save( (err, doctorUpdated) =>{
             if ( err ) {
                 return response.status(400).json({
                     ok: false,
-                    message: 'Error updating user!!',
+                    message: 'Error updating doctor!!',
                     errors: err
                 });
             }
-
-            userSaved.password = 'c:';
-            response.status(200).json({
+          response.status(200).json({
                 ok: true,
-                user: userSaved
+                doctor: doctorUpdated
             });
 
         })
@@ -104,9 +105,8 @@ app.put('/:id', mdAuthentication.verifyToken, (request, response) =>{
 
 });
 
-
 // =============================================
-// Create new User
+// Create new Doctor
 // =============================================
 app.post('/', mdAuthentication.verifyToken, (request, response) => {
 
@@ -114,61 +114,60 @@ app.post('/', mdAuthentication.verifyToken, (request, response) => {
     var  body = request.body;
 
     // Create reference to user data
-    var user = new User({
+    var doctor = new Doctor({
         name: body.name,
-        email: body.email,
-        password: bcrypt.hashSync(body.password, 10),
-        image: body.image,
-        role: body.role
+        user: request.user._id,
+        hospital: body.hospital
     });
 
     // Save data
-    user.save( ( err, userSaved ) => {
+    doctor.save( ( err, doctorSaved ) => {
         // Throw error
         if ( err ) {
             return response.status(400).json({
                 ok: false,
-                message: 'Error creating user!!',
+                message: 'Error creating doctor!!',
                 errors: err
             });
         }
         // Save Successful
         response.status(201).json({
             ok: true,
-            user: userSaved,
-            usertoken: request.user
+            doctor: doctorSaved
         });
     });
 
 });
 
 // =============================================
-// Delete User
+// Delete Doctor
 // =============================================
 app.delete('/:id', mdAuthentication.verifyToken, (request, response) =>{
+
     var id = request.params.id;
 
-    User.findByIdAndRemove(id, (err, userDeleted) =>{
+    Doctor.findByIdAndRemove(id, (err, doctorDeleted) =>{
                 // Throw error
                 if ( err ) {
                     return response.status(500).json({
                         ok: false,
-                        message: 'Error deleting user!!',
+                        message: 'Error deleting doctor!!',
                         errors: err
                     });
                 }
                 // Validation
-                if ( !userDeleted ) {
+                if ( !doctorDeleted ) {
                     return response.status(400).json({
                         ok: false,
-                        message: 'Do not exist an user with that ID!!',
-                        errors: { message: "Do not exist an user with that ID"}
+                        message: 'Do not exist a doctor with that ID!!',
+                        errors: { message: "Do not exist a doctor with that ID"}
                     });
                 }
                 // Deleted Successful
                 response.status(200).json({
                     ok: true,
-                    user: userDeleted
+                    message: "Doctor deleted sucsessfully",
+                    doctor: doctorDeleted
                 });
     });
 });

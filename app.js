@@ -16,20 +16,38 @@ app.use(bodyParser.json())
 var appRoutes = require('./routes/app');
 var userRoutes = require('./routes/user');
 var loginRoutes = require('./routes/login');
+var hospitalRoutes = require('./routes/hospital');
+var doctorRoutes = require('./routes/doctor');
+var searchRoutes = require('./routes/search');
+var uploadRoutes = require('./routes/upload');
+var imageRoutes = require('./routes/images');
 
 // Connection to DataBase
-mongoose.connection.openUri('mongodb://localhost:27017/hospitalDB', (err, res) => {
+mongoose.connection.openUri('mongodb://localhost:27017/hospitalDB', { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true }, (err, res) => {
 
 if (err) throw err;
 
 console.log('database: \x1b[32m%s\x1b[0m','online!')
 
-})
+});
 
-//Routes
+//Server Index Config
+// var serveIndex = require('serve-index');
+// app.use(express.static(__dirname + '/'))
+// app.use('/upload', serveIndex(__dirname + '/upload')); 
+
+
+// Use Routes
+app.use('/hospital', hospitalRoutes);
+app.use('/doctor', doctorRoutes);
 app.use('/user', userRoutes);
 app.use('/login', loginRoutes);
+app.use('/search', searchRoutes);
+app.use('/search/collection', searchRoutes);
+app.use('/upload', uploadRoutes);
+app.use('/image', imageRoutes);
 app.use('/', appRoutes);
+
 
 // Listen petitions
 app.listen(3000, ()=> {
