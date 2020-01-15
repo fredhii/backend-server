@@ -31,7 +31,7 @@ app.get('/', (request, response) => {
                         });
                     }
 
-                    Hospital.count({}, (err, count) => {
+                    Hospital.countDocuments({}, (err, count) => {
                         // Throw error
                         if ( err ) {
                             return response.status(500).json({

@@ -35,7 +35,7 @@ app.get('/', (request, response) => {
                     });
                 }
 
-                Doctor.count({}, (err, count) => {
+                Doctor.countDocuments({}, (err, count) => {
                     // Throw error
                     if ( err ) {
                         return response.status(500).json({

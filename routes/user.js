@@ -32,7 +32,7 @@ app.get('/', ( request, response, next ) => {
                     });
                 }
 
-                User.count({}, (err, count) => {
+                User.countDocuments({}, (err, count) => {
                     // Throw error
                     if ( err ) {
                         return response.status(500).json({
@@ -108,7 +108,7 @@ app.put('/:id', mdAuthentication.verifyToken, (request, response) =>{
 // =============================================
 // Create new User
 // =============================================
-app.post('/', mdAuthentication.verifyToken, (request, response) => {
+app.post('/', (request, response) => {
 
     // Using body parser node library
     var  body = request.body;
