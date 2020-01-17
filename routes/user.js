@@ -18,7 +18,7 @@ app.get('/', ( request, response, next ) => {
     from = Number(from);
 
     // Display only selected data
-    User.find({ }, 'name email image role')
+    User.find({ }, 'name email image role google')
         .skip(from)
         .limit(5)
         .exec( 
