@@ -169,4 +169,38 @@ app.delete('/:id', mdAuthentication.verifyToken, (request, response) =>{
     });
 });
 
+// ==========================================
+// Get Hospital by ID
+// ==========================================
+app.get('/:id', (request, response) => {
+
+    var id = request.params.id;
+
+    Hospital.findById(id)
+            .populate('user', 'name image email')
+            .exec(( error, hospital) => {
+
+                if ( !hospital ) {
+                    return response.status(400).json({
+                        ok: false,
+                        message: 'Hospitan ' + id + ' doesnt exist',
+                        errors: { message: 'Hospital doesn not exist'}
+                    });
+                }
+
+                if ( error ) {
+                    return response.status(500).json({
+                        ok: false,
+                        message: 'Error searching hospital...',
+                        errors: error
+                    });
+                }
+
+                response.status(200).json({
+                ok: true,
+                hospital: hospital
+                });
+            });
+});
+
 module.exports = app;

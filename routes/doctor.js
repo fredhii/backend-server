@@ -54,6 +54,36 @@ app.get('/', (request, response) => {
         });
 });
 
+// =============================================
+// GET Doctor by ID
+// =============================================
+app.get('/:id', (request, response) => {
+
+    var id = request.params.id;
+    Doctor.findById( id )
+        .populate('user', 'name email image')
+        .populate('hospital')
+        .exec( (err, doctor) => {
+            if ( !doctor ) {
+                return response.status(400).json({
+                    ok: false,
+                    message: 'Doctor does not exist!!',
+                    errors: { message: "Do not exist a doctor with that ID"}
+                });
+            }
+            if ( err ) {
+                return response.status(500).json({
+                    ok: false,
+                    message: 'Error searching doctor!!',
+                    errors: err
+                });
+            }
+            response.status(200).json({
+                ok: true,
+                doctor: doctor
+            });
+        });
+});
 
 // =============================================
 // Update Doctor
@@ -65,20 +95,20 @@ app.put('/:id', mdAuthentication.verifyToken, (request, response) =>{
         
     
     Doctor.findById( id, (err, doctor) => {
+
+        if ( !doctor ) {
+            return response.status(400).json({
+                ok: false,
+                message: 'Doctor does not exist!!',
+                errors: { message: "Do not exist a doctor with that ID"}
+            });
+        }
         
         if ( err ) {
             return response.status(500).json({
                 ok: false,
                 message: 'Error searching doctor!!',
                 errors: err
-            });
-        }
-        
-        if ( !doctor ) {
-            return response.status(400).json({
-                ok: false,
-                message: 'Doctor does not exist!!',
-                errors: { message: "Do not exist a doctor with that ID"}
             });
         }
 
@@ -147,20 +177,20 @@ app.delete('/:id', mdAuthentication.verifyToken, (request, response) =>{
     var id = request.params.id;
 
     Doctor.findByIdAndRemove(id, (err, doctorDeleted) =>{
-                // Throw error
-                if ( err ) {
-                    return response.status(500).json({
-                        ok: false,
-                        message: 'Error deleting doctor!!',
-                        errors: err
-                    });
-                }
                 // Validation
                 if ( !doctorDeleted ) {
                     return response.status(400).json({
                         ok: false,
                         message: 'Do not exist a doctor with that ID!!',
                         errors: { message: "Do not exist a doctor with that ID"}
+                    });
+                }
+                // Throw error
+                if ( err ) {
+                    return response.status(500).json({
+                        ok: false,
+                        message: 'Error deleting doctor!!',
+                        errors: err
                     });
                 }
                 // Deleted Successful
