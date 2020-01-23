@@ -26,3 +26,38 @@ exports.verifyToken = function(request, response, next) {
         // });
     });
 };
+
+// =============================================
+// Check Admin
+// =============================================
+exports.verifyAdminRole = function(request, response, next) {
+
+    var user = request.user;
+
+    if ( user.role === 'Admin') {
+        next();
+    } else {
+        return response.status(401).json({
+            ok: false,
+            message: 'Role is not valid!!'
+        });
+    }
+};
+
+// =============================================
+// Check Admin or Same User
+// =============================================
+exports.verifyAdminOrSameUser = function(request, response, next) {
+
+    var user = request.user;
+    var id = request.params.id;
+
+    if ( user.role === 'Admin' || user._id === id) {
+        next();
+    } else {
+        return response.status(401).json({
+            ok: false,
+            message: 'Role is not valid nor User is not this account account owner!!'
+        });
+    }
+};

@@ -70,7 +70,8 @@ app.post('/google', async(request, response) =>{
                     ok: true,
                     user: userDB,
                     token: token,
-                    id: userDB._id
+                    id: userDB._id,
+                    menu: getMenu( userDB.role )
                 });
             }
         } else {
@@ -91,7 +92,8 @@ app.post('/google', async(request, response) =>{
                     ok: true,
                     user: userDB,
                     token: token,
-                    id: userDB._id
+                    id: userDB._id,
+                    menu: getMenu( userDB.role )
                 });
             });
 
@@ -114,7 +116,7 @@ app.post('/', (request, response) => {
         if ( err ) {
             return response.status(500).json({
                 ok: false,
-                message: 'Error searching for user!!',
+                message: 'Error looking for user!!',
                 errors: err
             });
         }
@@ -131,7 +133,7 @@ app.post('/', (request, response) => {
         if ( !bcrypt.compareSync( body.password, userDB.password ) ) {
             return response.status(400).json({
                 ok: false,
-                message: 'password invalid!!',
+                message: 'invalid password!!',
                 errors: err
             });
         }
@@ -144,11 +146,45 @@ app.post('/', (request, response) => {
             ok: true,
             user: userDB,
             token: token,
-            id: userDB._id
+            id: userDB._id,
+            menu: getMenu( userDB.role )
         });
     });
 
 });
+
+
+function getMenu( role ) {
+
+    var menu = [
+        {
+          title: 'Main',
+          icon: 'mdi mdi-gauge',
+          submenu: [
+            { title: 'Dashboard', url: '/dashboard' },
+            { title: 'Progress Bar', url: '/progress' },
+            { title: 'Graphics', url: '/graphic1' },
+            { title: 'Promises', url: '/promesas' },
+            { title: 'Rxjs', url: '/rxjs' }
+          ]
+        },
+        {
+          title: 'Maintenance',
+          icon: 'mdi mdi-folder-lock-open',
+          submenu: [
+            // { title: 'Users', url: '/user' },
+            { title: 'Doctors', url: '/doctor' },
+            { title: 'Hospitals', url: '/hospital' }
+          ]
+        }
+      ];
+
+    if (role === 'Admin') {
+        menu[1].submenu.unshift({ title: 'Users', url: '/user' });
+    }
+
+    return menu;
+}
 
 
 
